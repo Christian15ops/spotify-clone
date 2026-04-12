@@ -1,24 +1,851 @@
-Create this folder in your GitHub project:
-audio
-Then put these files inside it with these exact filenames:
-audio/rebel.mp3
-audio/bilangkad.mp3
-audio/libre-sampak.mp3
-audio/i-really-miss-that.mp3
-audio/lolo.mp3
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Christian Dave Gemina | Music Player</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-audio/snooze.mp3
-audio/kill-bill.mp3
-audio/nobody-gets-me.mp3
-audio/blind.mp3
-audio/saturn.mp3
+    :root {
+      --bg: #06070b;
+      --panel: rgba(14, 17, 26, 0.88);
+      --panel-2: rgba(20, 24, 38, 0.95);
+      --panel-3: rgba(255,255,255,0.04);
+      --border: rgba(255,255,255,0.08);
+      --text: #f7f8fb;
+      --muted: #a5adc3;
+      --accent: #8b5cf6;
+      --accent-2: #22c55e;
+      --accent-3: #ec4899;
+      --shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+      --radius: 26px;
+    }
 
-audio/grenade.mp3
-audio/when-i-was-your-man.mp3
-audio/risk-it-all.mp3
-audio/versace-on-the-floor.mp3
-audio/talking-to-the-moon.mp3
+    body {
+      min-height: 100vh;
+      font-family: Inter, Segoe UI, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(139,92,246,0.18), transparent 24%),
+        radial-gradient(circle at top right, rgba(236,72,153,0.12), transparent 22%),
+        radial-gradient(circle at bottom left, rgba(34,197,94,0.12), transparent 20%),
+        linear-gradient(180deg, #07080d 0%, #090b12 100%);
+      overflow: hidden;
+    }
 
-audio/all-i-ask.mp3
-audio/rolling-in-the-deep.mp3
-audio/when-we-were-young.mp3
+    .app {
+      display: grid;
+      grid-template-columns: 250px 1fr 330px;
+      gap: 18px;
+      height: 100vh;
+      padding: 18px;
+    }
+
+    .sidebar, .main, .player {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+    }
+
+    .sidebar {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-3));
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    .brand h2 {
+      font-size: 16px;
+      line-height: 1.25;
+    }
+
+    .brand p {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .menu-title {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 4px;
+    }
+
+    .nav-btn, .album-link {
+      width: 100%;
+      border: 1px solid transparent;
+      background: var(--panel-2);
+      color: var(--text);
+      border-radius: 18px;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: 0.22s ease;
+      text-align: left;
+      font-size: 15px;
+    }
+
+    .nav-btn:hover, .album-link:hover, .song-row:hover, .album-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255,255,255,0.12);
+      background: rgba(30, 35, 54, 0.98);
+    }
+
+    .nav-icon, .album-index {
+      width: 30px;
+      height: 30px;
+      border-radius: 12px;
+      background: rgba(139,92,246,0.16);
+      color: #d7c5ff;
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .album-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .main {
+      padding: 18px;
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      gap: 18px;
+      overflow: hidden;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .search {
+      flex: 1;
+      position: relative;
+    }
+
+    .search input {
+      width: 100%;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      color: white;
+      padding: 15px 18px 15px 48px;
+      border-radius: 999px;
+      outline: none;
+      font-size: 15px;
+    }
+
+    .search span {
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 24px;
+      border-radius: 28px;
+      border: 1px solid var(--border);
+      background:
+        linear-gradient(135deg, rgba(139,92,246,0.22), rgba(236,72,153,0.12), rgba(34,197,94,0.10)),
+        rgba(255,255,255,0.03);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      right: -60px;
+      top: -60px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.12), transparent 65%);
+    }
+
+    .hero h1 {
+      font-size: 30px;
+      margin-bottom: 8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero p {
+      color: #d6dbec;
+      max-width: 780px;
+      line-height: 1.55;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 12px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-pill {
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #eef2ff;
+      font-size: 13px;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-rows: 1.3fr 1fr;
+      gap: 18px;
+      min-height: 0;
+    }
+
+    .songs-panel, .albums-panel {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 18px;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      gap: 12px;
+    }
+
+    .panel-head h3 {
+      font-size: 18px;
+      letter-spacing: 0.3px;
+    }
+
+    .panel-head small {
+      color: var(--muted);
+    }
+
+    .song-list {
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-right: 4px;
+    }
+
+    .song-row {
+      display: grid;
+      grid-template-columns: 42px 1fr auto auto;
+      gap: 12px;
+      align-items: center;
+      padding: 13px 14px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.025);
+      border: 1px solid rgba(255,255,255,0.05);
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .song-row.active {
+      background: linear-gradient(135deg, rgba(139,92,246,0.18), rgba(236,72,153,0.10));
+      border-color: rgba(139,92,246,0.38);
+    }
+
+    .song-index {
+      color: #d2c4ff;
+      background: rgba(139,92,246,0.14);
+      border-radius: 12px;
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .song-meta h4 {
+      font-size: 15px;
+      margin-bottom: 4px;
+    }
+
+    .song-meta p {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .song-duration {
+      color: var(--muted);
+      font-size: 13px;
+      min-width: 46px;
+      text-align: right;
+    }
+
+    .play-chip {
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.06);
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+    }
+
+    .album-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 14px;
+      min-height: 0;
+    }
+
+    .album-card {
+      background: rgba(255,255,255,0.03);
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,0.05);
+      padding: 14px;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .album-cover {
+      aspect-ratio: 1 / 1;
+      border-radius: 20px;
+      margin-bottom: 12px;
+      display: grid;
+      place-items: end start;
+      padding: 14px;
+      font-weight: 800;
+      font-size: 26px;
+      letter-spacing: 1px;
+      color: rgba(255,255,255,0.92);
+    }
+
+    .cover-1 { background: linear-gradient(135deg, #1f2937, #4b5563, #f59e0b); }
+    .cover-2 { background: linear-gradient(135deg, #412046, #7c3aed, #f472b6); }
+    .cover-3 { background: linear-gradient(135deg, #3a1e11, #92400e, #f59e0b); }
+    .cover-4 { background: linear-gradient(135deg, #2d1b1b, #7f1d1d, #d4a373); }
+    .cover-5 { background: linear-gradient(135deg, #0f172a, #1d4ed8, #38bdf8); }
+
+    .album-card h4 {
+      font-size: 15px;
+      margin-bottom: 4px;
+    }
+
+    .album-card p {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .player {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      justify-content: space-between;
+    }
+
+    .now-playing {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 16px;
+    }
+
+    .player-cover {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 24px;
+      margin-bottom: 16px;
+      display: grid;
+      place-items: end start;
+      padding: 18px;
+      font-size: 34px;
+      font-weight: 800;
+      color: rgba(255,255,255,0.92);
+      background: linear-gradient(135deg, #412046, #7c3aed, #f472b6);
+    }
+
+    .player h2 {
+      font-size: 20px;
+      line-height: 1.35;
+      margin-bottom: 8px;
+    }
+
+    .player p {
+      color: var(--muted);
+      margin-bottom: 16px;
+      line-height: 1.45;
+    }
+
+    .progress {
+      height: 7px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .progress > div {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-3), var(--accent-2));
+      border-radius: inherit;
+      transition: width 0.2s linear;
+    }
+
+    .time {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(5, auto);
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .control {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.05);
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .control.play {
+      width: 62px;
+      height: 62px;
+      border: none;
+      font-weight: 800;
+      color: white;
+      background: linear-gradient(135deg, var(--accent), var(--accent-3));
+    }
+
+    .volume-box, .mini-stats {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 14px;
+    }
+
+    .volume-box label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .volume-box input {
+      width: 100%;
+    }
+
+    .mini-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .stat {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 18px;
+      padding: 12px;
+    }
+
+    .stat h5 {
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .stat strong {
+      font-size: 19px;
+    }
+
+    audio { display: none; }
+
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.12);
+      border-radius: 999px;
+    }
+
+    @media (max-width: 1280px) {
+      .app { grid-template-columns: 230px 1fr; }
+      .player { display: none; }
+      .album-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 860px) {
+      body { overflow: auto; }
+      .app { grid-template-columns: 1fr; height: auto; }
+      .sidebar { order: 2; }
+      .album-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .content-grid { grid-template-rows: auto auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="avatar">CD</div>
+        <div>
+          <h2>Christian Dave Gemina</h2>
+          <p>Personal Music Library</p>
+        </div>
+      </div>
+
+      <div>
+        <div class="menu-title">Library</div>
+        <div style="display:flex; flex-direction:column; gap:12px; margin-top:10px;">
+          <button class="nav-btn" onclick="renderSongs(songs)"><span class="nav-icon">♫</span> All Songs List</button>
+          <button class="nav-btn" onclick="showFavorites()"><span class="nav-icon">♥</span> Favorites</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="menu-title">Albums</div>
+        <div class="album-list" id="sidebarAlbums"></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="search">
+          <span>🔎</span>
+          <input type="text" id="searchInput" placeholder="Search songs, artists, or albums..." />
+        </div>
+      </div>
+
+      <section class="hero">
+        <h1>Christian Dave Gemina Music Player</h1>
+        <p>A redesigned premium music dashboard with your selected five albums and twenty-five songs. Click a song to load it in the player, then use the play button. To make the songs actually play, replace each demo file path with your own MP3 files inside an <strong>audio</strong> folder.</p>
+        <div class="hero-stats">
+          <div class="hero-pill">5 Albums</div>
+          <div class="hero-pill">25 Songs</div>
+          <div class="hero-pill">Playable with your MP3 files</div>
+        </div>
+      </section>
+
+      <section class="content-grid">
+        <div class="songs-panel">
+          <div class="panel-head">
+            <h3>Selected Songs</h3>
+            <small><span id="songCount">25</span> songs</small>
+          </div>
+          <div class="song-list" id="songList"></div>
+        </div>
+
+        <div class="albums-panel">
+          <div class="panel-head">
+            <h3>Albums</h3>
+            <small>Tap an album to filter songs</small>
+          </div>
+          <div class="album-grid" id="albumGrid"></div>
+        </div>
+      </section>
+    </main>
+
+    <aside class="player">
+      <div class="now-playing">
+        <div class="player-cover" id="playerCover">NPA</div>
+        <h2 id="playerTitle">REBEL</h2>
+        <p id="playerArtist">Ben&Ben • Ben&Ben</p>
+        <div class="progress"><div id="progressBar"></div></div>
+        <div class="time"><span id="currentTime">0:00</span><span id="playerDuration">0:00</span></div>
+      </div>
+
+      <div class="controls">
+        <button class="control" onclick="toggleMute()">🔇</button>
+        <button class="control" onclick="prevSong()">⏮</button>
+        <button class="control play" id="playBtn" onclick="togglePlay()">▶</button>
+        <button class="control" onclick="nextSong()">⏭</button>
+        <button class="control" onclick="playSelected()">♫</button>
+      </div>
+
+      <div class="volume-box">
+        <label><span>Volume</span><span id="volumeValue">80%</span></label>
+        <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.8">
+      </div>
+
+      <div class="mini-stats">
+        <div class="stat">
+          <h5>Total Songs</h5>
+          <strong>25</strong>
+        </div>
+        <div class="stat">
+          <h5>Total Albums</h5>
+          <strong>5</strong>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <audio id="audioPlayer"></audio>
+
+  <script>
+    const albums = [
+      { id: 1, name: 'BEN&BEN', songs: 5, coverClass: 'cover-1', label: 'NPA' },
+      { id: 2, name: 'SZA', songs: 5, coverClass: 'cover-2', label: 'SZA' },
+      { id: 3, name: 'BRUNO MARS', songs: 5, coverClass: 'cover-3', label: 'BM' },
+      { id: 4, name: 'ADELE', songs: 5, coverClass: 'cover-4', label: 'ADL' },
+      { id: 5, name: 'SAM SMITH', songs: 5, coverClass: 'cover-5', label: 'SS' }
+    ];
+
+    const songs = [
+      { id: 1, title: 'Leaves', artist: 'Ben&Ben', album: 'BEN&BEN', duration: '3:50', coverClass: 'cover-1', label: 'BB', favorite: true, src: 'audio/leaves.mp3' },
+      { id: 2, title: 'Lifetime', artist: 'Ben&Ben', album: 'BEN&BEN', duration: '4:10', coverClass: 'cover-1', label: 'BB', favorite: true, src: 'audio/lifetime.mp3' },
+      { id: 3, title: 'Make It With You', artist: 'Ben&Ben', album: 'BEN&BEN', duration: '4:05', coverClass: 'cover-1', label: 'BB', favorite: false, src: 'audio/make-it-with-you.mp3' },
+      { id: 4, title: 'Autumn', artist: 'Ben&Ben', album: 'BEN&BEN', duration: '3:40', coverClass: 'cover-1', label: 'BB', favorite: true, src: 'audio/autumn.mp3' },
+      { id: 5, title: 'Maybe The Night', artist: 'Ben&Ben', album: 'BEN&BEN', duration: '4:20', coverClass: 'cover-1', label: 'BB', favorite: true, src: 'audio/maybe-the-night.mp3' },
+
+      { id: 6, title: 'Snooze', artist: 'SZA', album: 'SZA', duration: '3:21', coverClass: 'cover-2', label: 'SZA', favorite: true, src: 'audio/snooze.mp3' },
+      { id: 7, title: 'Kill Bill', artist: 'SZA', album: 'SZA', duration: '2:34', coverClass: 'cover-2', label: 'SZA', favorite: true, src: 'audio/kill-bill.mp3' },
+      { id: 8, title: 'Nobody Gets Me', artist: 'SZA', album: 'SZA', duration: '3:01', coverClass: 'cover-2', label: 'SZA', favorite: false, src: 'audio/nobody-gets-me.mp3' },
+      { id: 9, title: 'Blind', artist: 'SZA', album: 'SZA', duration: '2:30', coverClass: 'cover-2', label: 'SZA', favorite: false, src: 'audio/blind.mp3' },
+      { id: 10, title: 'Saturn', artist: 'SZA', album: 'SZA', duration: '3:06', coverClass: 'cover-2', label: 'SZA', favorite: false, src: 'audio/saturn.mp3' },
+
+      { id: 11, title: 'Grenade', artist: 'Bruno Mars', album: 'BRUNO MARS', duration: '3:42', coverClass: 'cover-3', label: 'BM', favorite: true, src: 'audio/grenade.mp3' },
+      { id: 12, title: 'When I Was Your Man', artist: 'Bruno Mars', album: 'BRUNO MARS', duration: '3:34', coverClass: 'cover-3', label: 'BM', favorite: true, src: 'audio/when-i-was-your-man.mp3' },
+      { id: 13, title: 'Risk It All', artist: 'Bruno Mars', album: 'BRUNO MARS', duration: '3:39', coverClass: 'cover-3', label: 'BM', favorite: false, src: 'audio/risk-it-all.mp3' },
+      { id: 14, title: 'Versace On The Floor', artist: 'Bruno Mars', album: 'BRUNO MARS', duration: '4:21', coverClass: 'cover-3', label: 'BM', favorite: false, src: 'audio/versace-on-the-floor.mp3' },
+      { id: 15, title: 'Talking To The Moon', artist: 'Bruno Mars', album: 'BRUNO MARS', duration: '3:37', coverClass: 'cover-3', label: 'BM', favorite: true, src: 'audio/talking-to-the-moon.mp3' },
+
+      { id: 16, title: 'All I Ask', artist: 'Adele', album: 'ADELE', duration: '4:31', coverClass: 'cover-4', label: 'ADL', favorite: true, src: 'audio/all-i-ask.mp3' },
+      { id: 17, title: 'Rolling in the Deep', artist: 'Adele', album: 'ADELE', duration: '3:48', coverClass: 'cover-4', label: 'ADL', favorite: true, src: 'audio/rolling-in-the-deep.mp3' },
+      { id: 18, title: 'When We Were Young', artist: 'Adele', album: 'ADELE', duration: '4:50', coverClass: 'cover-4', label: 'ADL', favorite: false, src: 'audio/when-we-were-young.mp3' },
+      { id: 19, title: 'Someone Like You', artist: 'Adele', album: 'ADELE', duration: '4:45', coverClass: 'cover-4', label: 'ADL', favorite: true, src: 'audio/someone-like-you.mp3' },
+      { id: 20, title: 'Chasing Pavements', artist: 'Adele', album: 'ADELE', duration: '3:30', coverClass: 'cover-4', label: 'ADL', favorite: false, src: 'audio/chasing-pavements.mp3' },
+
+      { id: 21, title: 'I’m Not The Only One', artist: 'Sam Smith', album: 'SAM SMITH', duration: '3:59', coverClass: 'cover-5', label: 'SS', favorite: true, src: 'audio/im-not-the-only-one.mp3' },
+      { id: 22, title: 'Too Good At Goodbyes', artist: 'Sam Smith', album: 'SAM SMITH', duration: '3:21', coverClass: 'cover-5', label: 'SS', favorite: true, src: 'audio/too-good-at-goodbyes.mp3' },
+      { id: 23, title: 'Stay With Me', artist: 'Sam Smith', album: 'SAM SMITH', duration: '2:52', coverClass: 'cover-5', label: 'SS', favorite: false, src: 'audio/stay-with-me.mp3' },
+      { id: 24, title: 'Dancing With A Stranger', artist: 'Sam Smith', album: 'SAM SMITH', duration: '2:51', coverClass: 'cover-5', label: 'SS', favorite: false, src: 'audio/dancing-with-a-stranger.mp3' },
+      { id: 25, title: 'Lay Me Down', artist: 'Sam Smith', album: 'SAM SMITH', duration: '4:14', coverClass: 'cover-5', label: 'SS', favorite: true, src: 'audio/lay-me-down.mp3' }
+    ];
+
+    const songList = document.getElementById('songList');
+    const albumGrid = document.getElementById('albumGrid');
+    const sidebarAlbums = document.getElementById('sidebarAlbums');
+    const searchInput = document.getElementById('searchInput');
+    const songCount = document.getElementById('songCount');
+
+    const playerTitle = document.getElementById('playerTitle');
+    const playerArtist = document.getElementById('playerArtist');
+    const playerDuration = document.getElementById('playerDuration');
+    const playerCover = document.getElementById('playerCover');
+    const currentTimeEl = document.getElementById('currentTime');
+    const progressBar = document.getElementById('progressBar');
+    const playBtn = document.getElementById('playBtn');
+    const volumeSlider = document.getElementById('volumeSlider');
+    const volumeValue = document.getElementById('volumeValue');
+    const audioPlayer = document.getElementById('audioPlayer');
+
+    let currentSongs = [...songs];
+    let currentSongIndex = 0;
+    let currentSong = songs[0];
+
+    function formatTime(seconds) {
+      if (!isFinite(seconds)) return '0:00';
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60).toString().padStart(2, '0');
+      return `${mins}:${secs}`;
+    }
+
+    function renderSidebarAlbums() {
+      sidebarAlbums.innerHTML = albums.map((album, i) => `
+        <button class="album-link" onclick="filterByAlbum('${album.name}')">
+          <span class="album-index">${i + 1}</span>
+          ${album.name}
+        </button>
+      `).join('');
+    }
+
+    function renderAlbums() {
+      albumGrid.innerHTML = albums.map(album => `
+        <div class="album-card" onclick="filterByAlbum('${album.name}')">
+          <div class="album-cover ${album.coverClass}">${album.label}</div>
+          <h4>${album.name}</h4>
+          <p>${album.songs} songs</p>
+        </div>
+      `).join('');
+    }
+
+    function updatePlayer(song) {
+      currentSong = song;
+      currentSongIndex = currentSongs.findIndex(s => s.id === song.id);
+      if (currentSongIndex < 0) currentSongIndex = 0;
+      playerTitle.textContent = song.title;
+      playerArtist.textContent = `${song.artist} • ${song.album}`;
+      playerDuration.textContent = song.duration;
+      playerCover.className = `player-cover ${song.coverClass}`;
+      playerCover.textContent = song.label;
+      audioPlayer.src = song.src;
+      highlightActiveSong(song.id);
+    }
+
+    function highlightActiveSong(songId) {
+      document.querySelectorAll('.song-row').forEach(row => {
+        row.classList.toggle('active', Number(row.dataset.id) === Number(songId));
+      });
+    }
+
+    function renderSongs(list = songs) {
+      currentSongs = [...list];
+      songCount.textContent = list.length;
+      songList.innerHTML = list.map(song => `
+        <div class="song-row ${song.id === currentSong.id ? 'active' : ''}" data-id="${song.id}" onclick="selectSong(${song.id})">
+          <div class="song-index">${song.id}</div>
+          <div class="song-meta">
+            <h4>${song.title}</h4>
+            <p>${song.artist} • ${song.album}</p>
+          </div>
+          <div class="song-duration">${song.duration}</div>
+          <div class="play-chip">▶</div>
+        </div>
+      `).join('');
+    }
+
+    window.selectSong = function(id) {
+      const chosen = songs.find(song => song.id === id);
+      updatePlayer(chosen);
+    }
+
+    window.filterByAlbum = function(albumName) {
+      const filtered = songs.filter(song => song.album === albumName);
+      renderSongs(filtered);
+      if (filtered.length) updatePlayer(filtered[0]);
+    }
+
+    window.showFavorites = function() {
+      const filtered = songs.filter(song => song.favorite);
+      renderSongs(filtered);
+      if (filtered.length) updatePlayer(filtered[0]);
+    }
+
+    window.playSelected = function() {
+      audioPlayer.play().then(() => {
+        playBtn.textContent = '❚❚';
+      }).catch(() => {
+        alert('Add your MP3 files inside the audio folder first so the songs can play.');
+      });
+    }
+
+    window.togglePlay = function() {
+      if (!audioPlayer.src) updatePlayer(currentSong);
+      if (audioPlayer.paused) {
+        audioPlayer.play().then(() => {
+          playBtn.textContent = '❚❚';
+        }).catch(() => {
+          alert('Add your MP3 files inside the audio folder first so the songs can play.');
+        });
+      } else {
+        audioPlayer.pause();
+        playBtn.textContent = '▶';
+      }
+    }
+
+    window.prevSong = function() {
+      if (!currentSongs.length) return;
+      currentSongIndex = (currentSongIndex - 1 + currentSongs.length) % currentSongs.length;
+      updatePlayer(currentSongs[currentSongIndex]);
+      audioPlayer.play().then(() => playBtn.textContent = '❚❚').catch(() => {});
+    }
+
+    window.nextSong = function() {
+      if (!currentSongs.length) return;
+      currentSongIndex = (currentSongIndex + 1) % currentSongs.length;
+      updatePlayer(currentSongs[currentSongIndex]);
+      audioPlayer.play().then(() => playBtn.textContent = '❚❚').catch(() => {});
+    }
+
+    window.toggleMute = function() {
+      audioPlayer.muted = !audioPlayer.muted;
+    }
+
+    searchInput.addEventListener('input', function() {
+      const q = this.value.trim().toLowerCase();
+      const filtered = songs.filter(song =>
+        song.title.toLowerCase().includes(q) ||
+        song.artist.toLowerCase().includes(q) ||
+        song.album.toLowerCase().includes(q)
+      );
+      renderSongs(filtered);
+      if (filtered.length) updatePlayer(filtered[0]);
+    });
+
+    volumeSlider.addEventListener('input', function() {
+      audioPlayer.volume = Number(this.value);
+      volumeValue.textContent = `${Math.round(Number(this.value) * 100)}%`;
+    });
+
+    audioPlayer.addEventListener('timeupdate', () => {
+      currentTimeEl.textContent = formatTime(audioPlayer.currentTime);
+      const progress = audioPlayer.duration ? (audioPlayer.currentTime / audioPlayer.duration) * 100 : 0;
+      progressBar.style.width = `${progress}%`;
+    });
+
+    audioPlayer.addEventListener('loadedmetadata', () => {
+      playerDuration.textContent = formatTime(audioPlayer.duration);
+    });
+
+    audioPlayer.addEventListener('ended', () => {
+      nextSong();
+    });
+
+    audioPlayer.volume = 0.8;
+    renderSidebarAlbums();
+    renderAlbums();
+    renderSongs(songs);
+    updatePlayer(songs[0]);
+  </script>
+</body>
+</html>
