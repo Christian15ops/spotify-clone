@@ -9,9 +9,8 @@
 
     :root {
       --bg: #06070b;
-      --panel: rgba(14, 17, 26, 0.88);
-      --panel-2: rgba(20, 24, 38, 0.95);
-      --panel-3: rgba(255,255,255,0.04);
+      --panel: rgba(14, 17, 26, 0.92);
+      --panel-2: rgba(20, 24, 38, 0.96);
       --border: rgba(255,255,255,0.08);
       --text: #f7f8fb;
       --muted: #a5adc3;
@@ -31,14 +30,15 @@
         radial-gradient(circle at top right, rgba(236,72,153,0.12), transparent 22%),
         radial-gradient(circle at bottom left, rgba(34,197,94,0.12), transparent 20%),
         linear-gradient(180deg, #07080d 0%, #090b12 100%);
-      overflow: hidden;
+      overflow-x: hidden;
+      overflow-y: auto;
     }
 
     .app {
       display: grid;
       grid-template-columns: 250px 1fr 330px;
       gap: 18px;
-      height: 100vh;
+      min-height: 100vh;
       padding: 18px;
     }
 
@@ -55,6 +55,7 @@
       display: flex;
       flex-direction: column;
       gap: 20px;
+      height: fit-content;
     }
 
     .brand {
@@ -92,7 +93,7 @@
       font-size: 12px;
       text-transform: uppercase;
       letter-spacing: 2px;
-      margin-bottom: 4px;
+      margin-bottom: 10px;
     }
 
     .nav-btn, .album-link {
@@ -139,10 +140,10 @@
     .main {
       padding: 18px;
       display: grid;
-      grid-template-rows: auto auto 1fr;
+      grid-template-rows: auto auto auto;
       gap: 18px;
-      overflow: hidden;
       min-height: 0;
+      overflow: visible;
     }
 
     .topbar {
@@ -232,10 +233,10 @@
 
     .content-grid {
       display: grid;
-      grid-template-rows: minmax(0, 1.15fr) minmax(220px, 0.85fr);
+      grid-template-rows: auto auto;
       gap: 18px;
       min-height: 0;
-      overflow: hidden;
+      overflow: visible;
     }
 
     .songs-panel, .albums-panel {
@@ -246,7 +247,7 @@
       min-height: 0;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      overflow: visible;
     }
 
     .panel-head {
@@ -267,7 +268,8 @@
     }
 
     .song-list {
-      overflow: auto;
+      max-height: 420px;
+      overflow-y: auto;
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -335,7 +337,6 @@
       display: grid;
       grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: 14px;
-      min-height: 0;
       align-content: start;
     }
 
@@ -382,7 +383,10 @@
       display: flex;
       flex-direction: column;
       gap: 18px;
-      justify-content: space-between;
+      justify-content: flex-start;
+      height: fit-content;
+      position: sticky;
+      top: 18px;
     }
 
     .now-playing {
@@ -544,11 +548,19 @@
     }
 
     @media (max-width: 860px) {
-      body { overflow: auto; }
-      .app { grid-template-columns: 1fr; height: auto; }
+      body { overflow-y: auto; }
+      .app {
+        grid-template-columns: 1fr;
+        min-height: auto;
+      }
       .sidebar { order: 2; }
+      .player {
+        position: static;
+        order: 3;
+      }
       .album-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .content-grid { grid-template-rows: auto auto; overflow: visible; }
+      .content-grid { grid-template-rows: auto auto; }
+      .song-list { max-height: none; }
     }
   </style>
 </head>
@@ -556,7 +568,7 @@
   <div class="app">
     <aside class="sidebar">
       <div class="brand">
-        <div class="avatar">CD</div>
+        <div class="avatar">CH</div>
         <div>
           <h2>Christianify</h2>
           <p>Christianify Library</p>
@@ -586,12 +598,12 @@
       </div>
 
       <section class="hero">
-        <h1>Christianify Music Player</h1>
-        <p>A redesigned premium music dashboard with your selected five albums and twenty-five songs. Click a song to load it in the player, then use the play button. To make the songs actually play, replace each demo file path with your own MP3 files inside an <strong>audio</strong> folder.</p>
+        <h1>Lakas Mag Luto</h1>
+        <p>Batak Mag Yearn.</p>
         <div class="hero-stats">
           <div class="hero-pill">5 Albums</div>
           <div class="hero-pill">25 Songs</div>
-          <div class="hero-pill">Playable with your MP3 files</div>
+          <div class="hero-pill">Instant Click-to-Play</div>
         </div>
       </section>
 
@@ -616,9 +628,9 @@
 
     <aside class="player">
       <div class="now-playing">
-        <div class="player-cover" id="playerCover">NPA</div>
-        <h2 id="playerTitle">REBEL</h2>
-        <p id="playerArtist">Ben&Ben • Ben&Ben</p>
+        <div class="player-cover" id="playerCover">BB</div>
+        <h2 id="playerTitle">Leaves</h2>
+        <p id="playerArtist">Ben&Ben • BEN&BEN</p>
         <input type="range" class="progress-slider" id="progressSlider" min="0" max="100" value="0" step="0.1">
         <div class="time"><span id="currentTime">0:00</span><span id="playerDuration">0:00</span></div>
       </div>
@@ -653,7 +665,7 @@
 
   <script>
     const albums = [
-      { id: 1, name: 'BEN&BEN', songs: 5, coverClass: 'cover-1', label: 'NPA' },
+      { id: 1, name: 'BEN&BEN', songs: 5, coverClass: 'cover-1', label: 'BB' },
       { id: 2, name: 'SZA', songs: 5, coverClass: 'cover-2', label: 'SZA' },
       { id: 3, name: 'BRUNO MARS', songs: 5, coverClass: 'cover-3', label: 'BM' },
       { id: 4, name: 'ADELE', songs: 5, coverClass: 'cover-4', label: 'ADL' },
@@ -739,23 +751,23 @@
       `).join('');
     }
 
-    function updatePlayer(song) {
-      currentSong = song;
-      currentSongIndex = currentSongs.findIndex(s => s.id === song.id);
-      if (currentSongIndex < 0) currentSongIndex = 0;
-      playerTitle.textContent = song.title;
-      playerArtist.textContent = `${song.artist} • ${song.album}`;
-      playerDuration.textContent = song.duration;
-      playerCover.className = `player-cover ${song.coverClass}`;
-      playerCover.textContent = song.label;
-      audioPlayer.src = song.src;
-      highlightActiveSong(song.id);
-    }
-
     function highlightActiveSong(songId) {
       document.querySelectorAll('.song-row').forEach(row => {
         row.classList.toggle('active', Number(row.dataset.id) === Number(songId));
       });
+    }
+
+    function updatePlayer(song) {
+      currentSong = song;
+      currentSongIndex = currentSongs.findIndex(s => s.id === song.id);
+      if (currentSongIndex < 0) currentSongIndex = 0;
+
+      playerTitle.textContent = song.title;
+      playerArtist.textContent = `${song.artist} • ${song.album}`;
+      playerCover.className = `player-cover ${song.coverClass}`;
+      playerCover.textContent = song.label;
+      audioPlayer.src = song.src;
+      highlightActiveSong(song.id);
     }
 
     function renderSongs(list = songs) {
@@ -777,59 +789,70 @@
     window.selectSong = function(id) {
       const chosen = songs.find(song => song.id === id);
       updatePlayer(chosen);
-    }
+
+      audioPlayer.play().then(() => {
+        playBtn.textContent = '❚❚';
+      }).catch(() => {
+        alert('Audio file not found. Check the filename and path inside the audio folder.');
+      });
+    };
 
     window.filterByAlbum = function(albumName) {
       const filtered = songs.filter(song => song.album === albumName);
       renderSongs(filtered);
       if (filtered.length) updatePlayer(filtered[0]);
-    }
+    };
 
     window.showFavorites = function() {
       const filtered = songs.filter(song => song.favorite);
       renderSongs(filtered);
       if (filtered.length) updatePlayer(filtered[0]);
-    }
+    };
 
     window.playSelected = function() {
       audioPlayer.play().then(() => {
         playBtn.textContent = '❚❚';
       }).catch(() => {
-        alert('Add your MP3 files inside the audio folder first so the songs can play.');
+        alert('Audio file not found. Check the filename and path inside the audio folder.');
       });
-    }
+    };
 
     window.togglePlay = function() {
       if (!audioPlayer.src) updatePlayer(currentSong);
+
       if (audioPlayer.paused) {
         audioPlayer.play().then(() => {
           playBtn.textContent = '❚❚';
         }).catch(() => {
-          alert('Add your MP3 files inside the audio folder first so the songs can play.');
+          alert('Audio file not found. Check the filename and path inside the audio folder.');
         });
       } else {
         audioPlayer.pause();
         playBtn.textContent = '▶';
       }
-    }
+    };
 
     window.prevSong = function() {
       if (!currentSongs.length) return;
       currentSongIndex = (currentSongIndex - 1 + currentSongs.length) % currentSongs.length;
       updatePlayer(currentSongs[currentSongIndex]);
-      audioPlayer.play().then(() => playBtn.textContent = '❚❚').catch(() => {});
-    }
+      audioPlayer.play().then(() => {
+        playBtn.textContent = '❚❚';
+      }).catch(() => {});
+    };
 
     window.nextSong = function() {
       if (!currentSongs.length) return;
       currentSongIndex = (currentSongIndex + 1) % currentSongs.length;
       updatePlayer(currentSongs[currentSongIndex]);
-      audioPlayer.play().then(() => playBtn.textContent = '❚❚').catch(() => {});
-    }
+      audioPlayer.play().then(() => {
+        playBtn.textContent = '❚❚';
+      }).catch(() => {});
+    };
 
     window.toggleMute = function() {
       audioPlayer.muted = !audioPlayer.muted;
-    }
+    };
 
     searchInput.addEventListener('input', function() {
       const q = this.value.trim().toLowerCase();
