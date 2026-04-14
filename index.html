@@ -414,21 +414,36 @@
       line-height: 1.45;
     }
 
-    .progress {
-      cursor: pointer;
+    .progress-slider {
+      width: 100%;
+      appearance: none;
+      -webkit-appearance: none;
       height: 7px;
-      background: rgba(255,255,255,0.08);
       border-radius: 999px;
-      overflow: hidden;
+      background: rgba(255,255,255,0.08);
+      outline: none;
+      cursor: pointer;
       margin-bottom: 10px;
     }
 
-    .progress > div {
-      width: 0%;
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent), var(--accent-3), var(--accent-2));
-      border-radius: inherit;
-      transition: width 0.2s linear;
+    .progress-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-3));
+      border: none;
+      cursor: pointer;
+    }
+
+    .progress-slider::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-3));
+      border: none;
+      cursor: pointer;
     }
 
     .time {
@@ -567,7 +582,7 @@
       </div>
 
       <section class="hero">
-        <h1>Christinifyyer</h1>
+        <h1>Christinify Music Player</h1>
         <p>A redesigned premium music dashboard with your selected five albums and twenty-five songs. Click a song to load it in the player, then use the play button. To make the songs actually play, replace each demo file path with your own MP3 files inside an <strong>audio</strong> folder.</p>
         <div class="hero-stats">
           <div class="hero-pill">5 Albums</div>
@@ -600,7 +615,7 @@
         <div class="player-cover" id="playerCover">NPA</div>
         <h2 id="playerTitle">REBEL</h2>
         <p id="playerArtist">Ben&Ben • Ben&Ben</p>
-        <div class="progress" id="progressContainer"><div id="progressBar"></div></div>
+        <input type="range" class="progress-slider" id="progressSlider" min="0" max="100" value="0" step="0.1">
         <div class="time"><span id="currentTime">0:00</span><span id="playerDuration">0:00</span></div>
       </div>
 
@@ -684,7 +699,7 @@
     const playerDuration = document.getElementById('playerDuration');
     const playerCover = document.getElementById('playerCover');
     const currentTimeEl = document.getElementById('currentTime');
-    const progressBar = document.getElementById('progressBar');
+    const progressSlider = document.getElementById('progressSlider');
     const playBtn = document.getElementById('playBtn');
     const volumeSlider = document.getElementById('volumeSlider');
     const volumeValue = document.getElementById('volumeValue');
@@ -831,7 +846,7 @@
     audioPlayer.addEventListener('timeupdate', () => {
       currentTimeEl.textContent = formatTime(audioPlayer.currentTime);
       const progress = audioPlayer.duration ? (audioPlayer.currentTime / audioPlayer.duration) * 100 : 0;
-      progressBar.style.width = `${progress}%`;
+      progressSlider.value = progress;
     });
 
     audioPlayer.addEventListener('loadedmetadata', () => {
@@ -842,32 +857,10 @@
       nextSong();
     });
 
-    const progressContainer = document.getElementById('progressContainer');
-    let isSeeking = false;
-
-    function seekAudio(event) {
-      const rect = progressContainer.getBoundingClientRect();
-      const offsetX = Math.min(Math.max(event.clientX - rect.left, 0), rect.width);
-      const percentage = offsetX / rect.width;
+    progressSlider.addEventListener('input', () => {
       if (audioPlayer.duration) {
-        audioPlayer.currentTime = percentage * audioPlayer.duration;
+        audioPlayer.currentTime = (progressSlider.value / 100) * audioPlayer.duration;
       }
-    }
-
-    progressContainer.addEventListener('click', seekAudio);
-
-    progressContainer.addEventListener('mousedown', (event) => {
-      isSeeking = true;
-      seekAudio(event);
-    });
-
-    window.addEventListener('mousemove', (event) => {
-      if (!isSeeking) return;
-      seekAudio(event);
-    });
-
-    window.addEventListener('mouseup', () => {
-      isSeeking = false;
     });
 
     audioPlayer.volume = 0.8;
